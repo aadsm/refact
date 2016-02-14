@@ -8,50 +8,11 @@ require('codemirror/mode/jsx/jsx');
 class OriginalCodeEditor extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      originalCode: '',
-    };
+    this.state = {};
     this._jsxElementsByLine = [];
   }
 
-  componentWillMount() {
-    fs.readFile(__dirname + '/../../examples/static-component-es6.react.js', 'utf8', (error, code) => {
-      this._updateOriginalCode(code);
-    });
-  }
-
-  _updateOriginalCode(code) {
-    this.setState({
-      originalCode: code
-    });
-
-    this._parseOriginalCode();
-  }
-
-  _parseOriginalCode() {
-    this._jsxElementsByLine = [];
-
-    jscodeshift(this.state.originalCode)
-      .find(jscodeshift.JSXElement)
-      .forEach((path) => {
-        var node = path.node;
-        var start = node.loc.start;
-        var end = node.loc.end;
-
-        // Add this node to the index on all lines it is present.
-        // Unshift instead of push to make the closest scope available at
-        // the head of the line index.
-        // AST lines are 1-based.
-        for (var line = start.line - 1; line < end.line; line++) {
-          if (!this._jsxElementsByLine[line]) {
-            this._jsxElementsByLine[line] = [];
-          }
-          this._jsxElementsByLine[line].unshift(node);
-        }
-      });
-  }
-
-  _hoverJSXElementAtCoordinates(x, y) {
+  _hoverJsxElementAtCoordinates(x, y) {
     var codemirror = this._getCodeMirror();
     var position = codemirror.coordsChar({
       left: x,
@@ -67,11 +28,11 @@ class OriginalCodeEditor extends React.Component {
     }
     this._lastPosition = position;
 
-    var jsxElement = this._findJsxElementAtPosition(position.line, position.ch);
-    this._hoverJSXElement(jsxElement);
+    var jsxElement = this.props.refactor.getElementAt(position.line, position.ch);
+    this._hoverJsxElement(jsxElement);
   }
 
-  _hoverJSXElement(jsxElement) {
+  _hoverJsxElement(jsxElement) {
     var codemirror = this._getCodeMirror();
     var marker = null;
 
@@ -101,31 +62,8 @@ class OriginalCodeEditor extends React.Component {
     });
   }
 
-  _findJsxElementAtPosition(line, column) {
-    var jsxElementsAtLine = this._jsxElementsByLine[line];
+  _startRefactoring(jsxElement) {
 
-    if (!jsxElementsAtLine) {
-      return null;
-    }
-
-    for (var i = 0; i < jsxElementsAtLine.length; i++) {
-      var jsxElement = jsxElementsAtLine[i];
-      if (this._isJsxElementAtPosition(jsxElement, line, column)) {
-        return jsxElement;
-      }
-    }
-  }
-
-  _isJsxElementAtPosition(jsxElement, line, column) {
-    var startLine = jsxElement.loc.start.line-1;
-    var startColumn = jsxElement.loc.start.column;
-    var endLine = jsxElement.loc.end.line-1;
-    var endColumn = jsxElement.loc.end.column;
-
-    return (
-      ((line === startLine && column >= startColumn) || line > startLine) &&
-      ((line === endLine && column <= endColumn) || line < endLine)
-    );
   }
 
   _getCodeMirror() {
@@ -133,7 +71,15 @@ class OriginalCodeEditor extends React.Component {
   }
 
   _onCodeMirrorMouseMove(event) {
-    this._hoverJSXElementAtCoordinates(event.pageX, event.pageY);
+    this._hoverJsxElementAtCoordinates(event.pageX, event.pageY);
+  }
+
+  _onCodeMirrorClick(event) {
+    if (!this.state.hoveredJsxElement) {
+      return;
+    }
+
+    this._startRefactoring(this.state.hoveredJsxElement);
   }
 
   render() {
@@ -147,7 +93,7 @@ class OriginalCodeEditor extends React.Component {
           onMouseMove={this._onCodeMirrorMouseMove.bind(this)}>
           <ReactCodeMirror
             ref="codemirror"
-            value={this.state.originalCode}
+            value={this.props.refactor.toSource()}
             options={{
               lineNumbers: true,
               mode: "jsx",

@@ -4,6 +4,19 @@ const ReactCodeMirror = require('react-codemirror');
 require('codemirror/mode/jsx/jsx');
 
 class FactoredCodeEditor extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
+
+  _getCode() {
+    if (!this.props.factoredReactComponent) {
+      return '';
+    }
+
+    return this.props.factoredReactComponent.toSource();
+  }
+
   render() {
     return (
       <div>
@@ -12,7 +25,7 @@ class FactoredCodeEditor extends React.Component {
         </div>
         <ReactCodeMirror
           ref="codemirror"
-          value={this.props.factoredCode}
+          value={this._getCode()}
           options={{
             lineNumbers: false,
             mode: "jsx",

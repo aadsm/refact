@@ -3,40 +3,35 @@ const fs = require('fs');
 const OriginalCodeEditor = require('./OriginalCodeEditor.react');
 const FactoredCodeEditor = require('./FactoredCodeEditor.react');
 const jscodeshift = require('jscodeshift');
+const Refactor = require('../Refactor');
+const FactoredReactComponent = require('../FactoredReactComponent');
 
 class Refact extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      factoredTemplate: '',
-      factoredCode: ''
+      refactor: new Refactor('')
     };
   }
 
   componentWillMount() {
-    fs.readFile(__dirname + '/../templates/react-class-es6.js', 'utf8', (error, code) => {
+    fs.readFile(__dirname + '/../../examples/static-component-es6.react.js', 'utf8', (error, code) => {
       this.setState({
-        factoredTemplate: code
+        refactor: new Refactor(code)
       });
     });
   }
 
   _onJsxElementHover(jsxElement) {
-    var factoredCode = '';
+    var factoredReactComponent = null;
 
     if (jsxElement) {
-      factoredCode = jscodeshift(this.state.factoredTemplate)
-        .find(jscodeshift.MethodDefinition)
-        .filter((path) => path.node.key.name === 'render')
-        .find(jscodeshift.ReturnStatement)
-        .map((path) => path.get('argument'))
-        .replaceWith(jsxElement)
-        .toSource();
+      factoredReactComponent = this.state.refactor.factorElement(jsxElement, 'es6');
     }
 
     this.setState({
-      factoredCode: factoredCode
+      factoredReactComponent: factoredReactComponent
     });
   }
 
@@ -55,6 +50,7 @@ class Refact extends React.Component {
         <div className="refactMainArea">
           <div className="originalCodeArea">
             <OriginalCodeEditor
+              refactor={this.state.refactor}
               onJsxElementHover={this._onJsxElementHover.bind(this)}
             />
           </div>
@@ -62,7 +58,7 @@ class Refact extends React.Component {
         <div className="refactMainArea">
           <div className="factoredCodeArea">
             <FactoredCodeEditor
-              factoredCode={this.state.factoredCode}
+              factoredReactComponent={this.state.factoredReactComponent}
             />
           </div>
         </div>

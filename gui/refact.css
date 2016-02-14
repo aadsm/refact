@@ -1,0 +1,71 @@
+#make-react-happy {
+  background-color: #D9D9F3;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.refactHeader {
+  height: 50px;
+  padding: 8px;
+}
+
+.logo {
+  display: inline-block;
+  line-height: 50px;
+}
+
+.instructions ol {
+  display: inline-block;
+  margin: 0;
+  vertical-align: middle;
+}
+
+.refactMainArea {
+  display: inline-block;
+  width: 50%;
+  vertical-align: top;
+  height: 400px;
+}
+
+.originalCodeArea {
+  border: 1px solid black;
+  margin-right: 4px;
+  height: 100%;
+}
+
+.factoredCodeArea {
+  border: 1px solid black;
+  margin-left: 4px;
+  height: 100%;
+}
+
+.originalCodeArea,
+.factoredCodeArea {
+  background-color: white;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.CodeMirror {
+  height: 370px;
+  font-size: 16px;
+}
+
+.jsxElementSelection {
+  background-color: rgba(255,240,6,.4);
+}
+
+.originalCodeEditor_selectionMode .CodeMirror-lines {
+  cursor: pointer;
+}
+
+.codeToolbar {
+  border-bottom: 1px solid black;
+  height: 29px;
+  padding-left: 8px;
+}
+
+.codeToolbarTitle {
+  line-height: 30px;
+  font-weight: bold;
+}

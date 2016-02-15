@@ -4,13 +4,18 @@ const FactoredReactComponent = require('./FactoredReactComponent');
 
 class Refactor {
   constructor(code) {
-    this._code = code;
-    this._jsxElementsByLine = [];
+    this._elementsByLine = [];
     this._parseCode(code);
   }
 
   _parseCode(code) {
+    this._code = code;
     this._jscodeshift = jscodeshift(code);
+    this._updateElementsIndex();
+  }
+
+  _updateElementsIndex() {
+    this._elementsByLine = [];
     this._jscodeshift
       .find(jscodeshift.JSXElement)
       .forEach((path) => {
@@ -23,34 +28,38 @@ class Refactor {
         // the head of the line index.
         // AST lines are 1-based.
         for (var line = start.line - 1; line < end.line; line++) {
-          if (!this._jsxElementsByLine[line]) {
-            this._jsxElementsByLine[line] = [];
+          if (!this._elementsByLine[line]) {
+            this._elementsByLine[line] = [];
           }
-          this._jsxElementsByLine[line].unshift(node);
+          this._elementsByLine[line].unshift(path);
         }
       });
   }
 
   getElementAt(line, column) {
-    var jsxElementsAtLine = this._jsxElementsByLine[line];
+    var elementsAtLine = this._elementsByLine[line];
 
-    if (!jsxElementsAtLine) {
+    if (!elementsAtLine) {
       return null;
     }
 
-    for (var i = 0; i < jsxElementsAtLine.length; i++) {
-      var jsxElement = jsxElementsAtLine[i];
-      if (this._isJsxElementAtPosition(jsxElement, line, column)) {
-        return jsxElement;
+    for (var i = 0; i < elementsAtLine.length; i++) {
+      var element = elementsAtLine[i];
+      if (this._isElementAtPosition(element, line, column)) {
+        return element;
       }
     }
   }
 
-  _isJsxElementAtPosition(jsxElement, line, column) {
-    var startLine = jsxElement.loc.start.line-1;
-    var startColumn = jsxElement.loc.start.column;
-    var endLine = jsxElement.loc.end.line-1;
-    var endColumn = jsxElement.loc.end.column;
+  _isElementAtPosition(element, line, column) {
+    var loc = element.node.loc;
+    if (!loc) {
+      return false;
+    }
+    var startLine = loc.start.line-1;
+    var startColumn = loc.start.column;
+    var endLine = loc.end.line-1;
+    var endColumn = loc.end.column;
 
     return (
       ((line === startLine && column >= startColumn) || line > startLine) &&
@@ -60,17 +69,50 @@ class Refactor {
 
   factorElementAt(line, column, template) {
     var element = this.getElementAt(line, column);
-    return this.factorElement(element);
+    return this.factorElement(element, template);
   }
 
   factorElement(element, template) {
-    return (
-      new FactoredReactComponent(this._jscodeshift.getAST(), element, template)
-    );
+    return new FactoredReactComponent(this._jscodeshift.getAST()[0].value, element.node, template);
   }
 
   applyFactoredReactComponent(factoredReactComponent) {
+    var jsxElement = this._factoredElement || factoredReactComponent.getFactoredJsxElement();
+    var newJsxElement =
+      jscodeshift.jsxElement(
+        jscodeshift.jsxOpeningElement(
+          jscodeshift.jsxIdentifier(factoredReactComponent.getName()),
+          [],
+          true
+        )
+      );
 
+    // Replace factored code with new component.
+    this._jscodeshift
+      .find(jscodeshift.JSXElement)
+      .filter((path) => {
+        return (
+          path.node.start === jsxElement.start &&
+          path.node.end === jsxElement.end
+        );
+      })
+      .replaceWith(newJsxElement);
+
+    // Reparse to get Ast with locations in all nodes.
+    this._parseCode(this._jscodeshift.toSource());
+
+    // Find the newJsxElement in the new AST.
+    newJsxElement = this._jscodeshift
+      .find(jscodeshift.JSXElement)
+      .filter((path) => path.node.start === jsxElement.start)
+      .paths()[0];
+
+    this._factoredElement = newJsxElement;
+    return this;
+  }
+
+  getFactoredElement() {
+    return this._factoredElement;
   }
 
   toSource() {

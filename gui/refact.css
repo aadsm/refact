@@ -51,8 +51,25 @@
   font-size: 16px;
 }
 
-.jsxElementSelection {
+.elementSelection {
   background-color: rgba(255,240,6,.4);
+}
+
+.refactSelection {
+  background-color: rgba(255,240,6,.4);
+}
+
+.editText {
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+}
+
+.startEditText {
+  border-left: 1px solid black;
+}
+
+.endEditText {
+  border-right: 1px solid black;
 }
 
 .originalCodeEditor_selectionMode .CodeMirror-lines {

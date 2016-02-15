@@ -17,7 +17,8 @@ class Refact extends React.Component {
   }
 
   componentWillMount() {
-    fs.readFile(__dirname + '/../../examples/static-component-es6.react.js', 'utf8', (error, code) => {
+    //fs.readFile(__dirname + '/../../examples/static-component-es6.react.js', 'utf8', (error, code) => {
+    fs.readFile(__dirname + '/../../examples/expr-component-es6.react.js', 'utf8', (error, code) => {
       this.setState({
         originalCode: code,
         refactor: new Refactor(code)

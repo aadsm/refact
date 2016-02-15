@@ -73,16 +73,29 @@ class Refactor {
   }
 
   factorElement(element, template) {
-    return new FactoredReactComponent(this._jscodeshift.getAST()[0].value, element.node, template);
+    var clonedElement = jscodeshift(this._code)
+      .find(element.value.type)
+      .filter((path) => path.value.start === element.node.start)
+
+    return new FactoredReactComponent(clonedElement, template);
   }
 
   applyFactoredReactComponent(factoredReactComponent) {
     var jsxElement = this._factoredElement || factoredReactComponent.getFactoredJsxElement();
+    var props = factoredReactComponent.getProps();
+
+    var newJsxElementAttributes = props.map((prop) => {
+      return jscodeshift.jsxAttribute(
+        jscodeshift.jsxIdentifier(prop.name),
+        prop.expression
+      );
+    });
+
     var newJsxElement =
       jscodeshift.jsxElement(
         jscodeshift.jsxOpeningElement(
           jscodeshift.jsxIdentifier(factoredReactComponent.getName()),
-          [],
+          newJsxElementAttributes,
           true
         )
       );

@@ -9,8 +9,57 @@ class OriginalCodeEditor extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      readOnly: 'cursor'
+      readOnly: 'nocursor'
     };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.source !== this.props.source) {
+      var codemirror = this._getCodeMirror();
+      var scrollInfo = codemirror.getScrollInfo();
+      codemirror.setValue(nextProps.source);
+      // Keep scroll position at the same level when the document changes
+      // during element editing.
+      if (nextProps.mode === 'editElement') {
+        codemirror.scrollIntoView({
+          left: scrollInfo.left,
+          top: scrollInfo.top,
+          bottom: scrollInfo.top + scrollInfo.height,
+          right: scrollInfo.left + scrollInfo.width
+        });
+      }
+    }
+
+    if (nextProps.editElement !== this.props.editElement) {
+      this._editElement(nextProps.editElement);
+    }
+  }
+
+  _editElement(element) {
+    if (!element) {
+      this._editElementMarkers.map((marker) => marker.clear());
+      this._editElementMarkers = null;
+      return;
+    }
+
+    var editableNames = element.node.openingElement.attributes.map((attr) => {
+      return attr.name;
+    });
+    editableNames.push(element.node.openingElement.name);
+
+    var codemirror = this._getCodeMirror();
+    this._editElementMarkers = editableNames.map((name) =>
+      codemirror.markText(
+        {line: name.loc.start.line-1, ch: name.loc.start.column},
+        {line: name.loc.end.line-1, ch: name.loc.end.column},
+        {
+          className: 'editableText',
+          inclusiveLeft: true,
+          inclusiveRight: true,
+          clearWhenEmpty: false
+        }
+      )
+    );
   }
 
   _getElementAtCoordinates(x, y) {
@@ -84,34 +133,35 @@ class OriginalCodeEditor extends React.Component {
   }
 
   _onCodeMirrorClick(event) {
-    if (this.state.editing) {
-      return;
-    }
-
-    if (this.state.isEditing) {
-      this._stopEditing();
+    if (this.state.isEditingText) {
+      this._stopEditingText();
     } else if (this.props.mode === 'elementSelection') {
       this._selectElement(this.state.hoveredElement);
     } else if (this.props.mode === 'editElement') {
       var element = this._getElementAtCoordinates(event.pageX, event.pageY);
+      if (!element || element.node !== this.props.editElement.node) {
+        return;
+      }
       var elementName = element.value.openingElement.name;
       this._editRange(elementName.loc.start, elementName.loc.end);
     }
   }
 
-  _stopEditing() {
+  _stopEditingText() {
     this._readOnlyMarks.forEach(mark => mark.clear());
     this._readOnlyMarks = null;
     this.state.editingTextMark.clear();
 
     this.setState({
-      isEditing: false,
-      editingTextMark: null
+      isEditingText: false,
+      editingTextMark: null,
+      readOnly: 'nocursor'
     });
   }
 
   _editRange(start, end) {
     var codemirror = this._getCodeMirror();
+
     var lastLineHandle = codemirror.getLineHandle(codemirror.lastLine());
 
     this._readOnlyMarks = [
@@ -140,11 +190,19 @@ class OriginalCodeEditor extends React.Component {
     );
 
     this.setState({
-      isEditing: true,
+      isEditingText: true,
       readOnly: false,
       editingTextMark: editingTextMark
     });
   }
+
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   if (nextState.isEditingText) {
+  //     return false;
+  //   } else {
+  //     return true;
+  //   }
+  // }
 
   _selectElement(element) {
     if (!element) {
@@ -163,12 +221,18 @@ class OriginalCodeEditor extends React.Component {
           <span className="codeToolbarTitle">Your Code</span>
         </div>
         <div
-          className="originalCodeEditor_selectionMode"
+          className={[
+            this.props.mode === 'elementSelection'
+              ? 'originalCodeEditor_selectionMode'
+              : '',
+            this.props.mode === 'editElement'
+              ? 'originalCodeEditor_editElementMode'
+              : '',
+          ].join(' ')}
           onMouseMove={this._onCodeMirrorMouseMove.bind(this)}
-          onClick={this._onCodeMirrorClick.bind(this)}>
+          onMouseDown={this._onCodeMirrorClick.bind(this)}>
           <ReactCodeMirror
             ref="codemirror"
-            value={this.props.refactor.toSource()}
             options={{
               lineNumbers: true,
               mode: "jsx",

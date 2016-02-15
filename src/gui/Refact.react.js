@@ -64,6 +64,7 @@ class Refact extends React.Component {
         <div className="refactMainArea">
           <div className="originalCodeArea">
             <OriginalCodeEditor
+              source={this.state.refactor.toSource()}
               refactor={this.state.refactor}
               editElement={this.state.refactor.getFactoredElement()}
               mode={this.state.originalCodeEditorMode}

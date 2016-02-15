@@ -59,7 +59,7 @@
   background-color: rgba(255,240,6,.4);
 }
 
-.editText {
+.editableText.editText {
   border-top: 1px solid black;
   border-bottom: 1px solid black;
 }
@@ -70,6 +70,11 @@
 
 .endEditText {
   border-right: 1px solid black;
+}
+
+.editableText {
+  border-bottom: 1px dashed blue;
+  cursor: pointer;
 }
 
 .originalCodeEditor_selectionMode .CodeMirror-lines {

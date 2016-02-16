@@ -28,7 +28,7 @@ class FactoredReactComponent {
 
   _importDependenciesAsProps(jsxElement) {
     var props = this._props = [];
-    var elementNames = jscodeshift(jsxElement)
+    jscodeshift(jsxElement)
       .find(jscodeshift.JSXExpressionContainer)
       .replaceWith((path) => {
         var propName = 'prop' + (props.length + 1);
@@ -45,6 +45,9 @@ class FactoredReactComponent {
             jscodeshift.identifier(propName)
           )
         );
+      })
+      .forEach((path, index) => {
+        props[index].identifier = path.get('expression').get('property');
       });
   }
 
@@ -102,7 +105,17 @@ class FactoredReactComponent {
   }
 
   getProps() {
-    return this._props;
+    return this._props.map(prop => {
+      return {
+        name: prop.name,
+        expression: prop.expression
+      };
+    });
+  }
+
+  setPropName(propIndex, name) {
+    jscodeshift(this._props[propIndex].identifier)
+      .replaceWith(jscodeshift.identifier(name));
   }
 
   toSource() {

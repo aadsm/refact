@@ -54,8 +54,10 @@ class Refact extends React.Component {
     this.setState({factoredReactComponent: this.state.factoredReactComponent});
   }
 
-  _onElementAttributeNameChange(name, attributeIndex) {
-    
+  _onElementAttributeNameChange(attributeIndex, name) {
+    this.state.factoredReactComponent.setPropName(attributeIndex, name);
+    this.state.refactor.applyFactoredReactComponent(this.state.factoredReactComponent);
+    this.setState({factoredReactComponent: this.state.factoredReactComponent});
   }
 
   render() {

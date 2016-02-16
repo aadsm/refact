@@ -86,6 +86,10 @@
   cursor: pointer;
 }
 
+.originalCodeEditor_editElementMode .CodeMirror-lines {
+  cursor: default;
+}
+
 .codeToolbar {
   border-bottom: 1px solid black;
   height: 29px;

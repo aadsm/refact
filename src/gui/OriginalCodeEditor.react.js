@@ -265,8 +265,8 @@ class OriginalCodeEditor extends React.Component {
   _onEditingElementAttributeNameChange() {
     if (this.props.onElementAttributeNameChange) {
       this.props.onElementAttributeNameChange(
-        this._getEditingText(),
-        this.state.editingAttributeIndex
+        this.state.editingAttributeIndex,
+        this._getEditingText()
       );
     }
   }

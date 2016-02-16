@@ -63,7 +63,8 @@
   border-top: 1px solid black;
   border-bottom: 1px solid black;
   background-color: white;
-  padding: 1px;
+  padding-top: 1px;
+  padding-bottom: 1px;
   box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
   position: relative;
   left: -2px;
@@ -71,10 +72,16 @@
 
 .startEditText {
   border-left: 1px solid black;
+  padding-left: 1px;
 }
 
 .endEditText {
   border-right: 1px solid black;
+  padding-right: 1px;
+}
+
+.editableText.editText.editTextSelected {
+  background: #d9d9d9;
 }
 
 .editableText {

@@ -15,6 +15,7 @@ class OriginalCodeEditor extends React.Component {
     this._onEditingElementNameChange = this._onEditingElementNameChange.bind(this);
     this._onEditingElementAttributeNameChange = this._onEditingElementAttributeNameChange.bind(this);
     this._ignoreCodeMirrorMouseDownOutsideEditText = this._ignoreCodeMirrorMouseDownOutsideEditText.bind(this);
+    this._handleEditingTextSelection = this._handleEditingTextSelection.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -185,12 +186,21 @@ class OriginalCodeEditor extends React.Component {
 
   _stopEditingText() {
     var codemirror = this._getCodeMirror();
+    var editingTextPosition = this.state.editingTextMark.find();
+
     this._readOnlyMarks.forEach(mark => mark.clear());
     this._readOnlyMarks = null;
     this.state.editingTextMark.clear();
+    if (this._editingTextSelectionMark) {
+      this._editingTextSelectionMark.clear();
+      this._editingTextSelectionMark = null;
+    }
+    // clear selection
+    codemirror.setCursor({line: editingTextPosition.from.line, ch: editingTextPosition.from.ch});
 
     codemirror.off('change', this.state.onEditingTextChange);
     codemirror.off('mousedown', this._ignoreCodeMirrorMouseDownOutsideEditText);
+    codemirror.off('beforeSelectionChange', this._handleEditingTextSelection);
 
     this.setState({
       isEditingText: false,
@@ -231,6 +241,7 @@ class OriginalCodeEditor extends React.Component {
 
     codemirror.on('change', onChange);
     codemirror.on('mousedown', this._ignoreCodeMirrorMouseDownOutsideEditText);
+    codemirror.on('beforeSelectionChange', this._handleEditingTextSelection);
 
     this.setState({
       isEditingText: true,
@@ -238,6 +249,28 @@ class OriginalCodeEditor extends React.Component {
       editingTextMark: editingTextMark,
       onEditingTextChange: onChange
     });
+  }
+
+  _handleEditingTextSelection(codemirror, handles) {
+    var range = handles.ranges[0];
+    var line = range.anchor.line;
+    var start = Math.min(range.anchor.ch, range.head.ch);
+    var end = Math.max(range.anchor.ch, range.head.ch);
+
+    if (this._editingTextSelectionMark) {
+      this._editingTextSelectionMark.clear();
+      this._editingTextSelectionMark = null;
+    }
+
+    if (start === end) {
+      return;
+    }
+
+    this._editingTextSelectionMark = codemirror.markText(
+      {line: line, ch: start},
+      {line: line, ch: end},
+      {className: 'editTextSelected'}
+    );
   }
 
   _ignoreCodeMirrorMouseDownOutsideEditText(codemirror, event) {

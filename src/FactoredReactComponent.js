@@ -94,6 +94,13 @@ class FactoredReactComponent {
       .nodes()[0];
   }
 
+  setName(name) {
+    this._jscodeshift
+      .find(jscodeshift.ClassDeclaration)
+      .map((path) => path.get('id'))
+      .replaceWith(jscodeshift.identifier(name));
+  }
+
   getProps() {
     return this._props;
   }

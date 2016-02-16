@@ -5,6 +5,7 @@ const FactoredReactComponent = require('./FactoredReactComponent');
 class Refactor {
   constructor(code) {
     this._elementsByLine = [];
+    this._attributesByLine = [];
     this._parseCode(code);
   }
 
@@ -12,6 +13,7 @@ class Refactor {
     this._code = code;
     this._jscodeshift = jscodeshift(code);
     this._updateElementsIndex();
+    this._updateAttributesIndex();
   }
 
   _updateElementsIndex() {
@@ -36,6 +38,28 @@ class Refactor {
       });
   }
 
+  _updateAttributesIndex() {
+    this._attributesByLine = [];
+    this._jscodeshift
+      .find(jscodeshift.JSXAttribute)
+      .forEach((path) => {
+        var node = path.node;
+        var start = node.loc.start;
+        var end = node.loc.end;
+
+        // Add this node to the index on all lines it is present.
+        // Unshift instead of push to make the closest scope available at
+        // the head of the line index.
+        // AST lines are 1-based.
+        for (var line = start.line - 1; line < end.line; line++) {
+          if (!this._attributesByLine[line]) {
+            this._attributesByLine[line] = [];
+          }
+          this._attributesByLine[line].unshift(path);
+        }
+      });
+  }
+
   getElementAt(line, column) {
     var elementsAtLine = this._elementsByLine[line];
 
@@ -45,6 +69,21 @@ class Refactor {
 
     for (var i = 0; i < elementsAtLine.length; i++) {
       var element = elementsAtLine[i];
+      if (this._isElementAtPosition(element, line, column)) {
+        return element;
+      }
+    }
+  }
+
+  getAttributeAt(line, column) {
+    var attributesByLine = this._attributesByLine[line];
+
+    if (!attributesByLine) {
+      return null;
+    }
+
+    for (var i = 0; i < attributesByLine.length; i++) {
+      var element = attributesByLine[i];
       if (this._isElementAtPosition(element, line, column)) {
         return element;
       }
@@ -81,7 +120,7 @@ class Refactor {
   }
 
   applyFactoredReactComponent(factoredReactComponent) {
-    var jsxElement = this._factoredElement || factoredReactComponent.getFactoredJsxElement();
+    var jsxElement = (this._factoredElement && this._factoredElement.node) || factoredReactComponent.getFactoredJsxElement();
     var props = factoredReactComponent.getProps();
 
     var newJsxElementAttributes = props.map((prop) => {

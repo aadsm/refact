@@ -11,28 +11,36 @@ class OriginalCodeEditor extends React.Component {
     this.state = {
       readOnly: 'nocursor'
     };
+
+    this._onEditingElementNameChange = this._onEditingElementNameChange.bind(this);
+    this._onEditingElementAttributeNameChange = this._onEditingElementAttributeNameChange.bind(this);
+    this._ignoreCodeMirrorMouseDownOutsideEditText = this._ignoreCodeMirrorMouseDownOutsideEditText.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
+    if (this.state.isEditingText) {
+      return;
+    }
+
     if (nextProps.source !== this.props.source) {
-      var codemirror = this._getCodeMirror();
-      var scrollInfo = codemirror.getScrollInfo();
-      codemirror.setValue(nextProps.source);
-      // Keep scroll position at the same level when the document changes
-      // during element editing.
-      if (nextProps.mode === 'editElement') {
-        codemirror.scrollIntoView({
-          left: scrollInfo.left,
-          top: scrollInfo.top,
-          bottom: scrollInfo.top + scrollInfo.height,
-          right: scrollInfo.left + scrollInfo.width
-        });
-      }
+      this._updateCodeMirrorText(nextProps.source);
     }
 
     if (nextProps.editElement !== this.props.editElement) {
       this._editElement(nextProps.editElement);
     }
+  }
+
+  _updateCodeMirrorText(source) {
+    var codemirror = this._getCodeMirror();
+    var scrollInfo = codemirror.getScrollInfo();
+    codemirror.setValue(source);
+    codemirror.scrollIntoView({
+      left: scrollInfo.left,
+      top: scrollInfo.top,
+      bottom: scrollInfo.top + scrollInfo.height,
+      right: scrollInfo.left + scrollInfo.width
+    });
   }
 
   _editElement(element) {
@@ -69,6 +77,15 @@ class OriginalCodeEditor extends React.Component {
       top: y
     });
     return this.props.refactor.getElementAt(position.line, position.ch);
+  }
+
+  _getAttributeAtCoordinates(x, y) {
+    var codemirror = this._getCodeMirror();
+    var position = codemirror.coordsChar({
+      left: x,
+      top: y
+    });
+    return this.props.refactor.getAttributeAt(position.line, position.ch);
   }
 
   _hoverElementAtCoordinates(x, y) {
@@ -138,19 +155,42 @@ class OriginalCodeEditor extends React.Component {
     } else if (this.props.mode === 'elementSelection') {
       this._selectElement(this.state.hoveredElement);
     } else if (this.props.mode === 'editElement') {
-      var element = this._getElementAtCoordinates(event.pageX, event.pageY);
-      if (!element || element.node !== this.props.editElement.node) {
-        return;
-      }
-      var elementName = element.value.openingElement.name;
-      this._editRange(elementName.loc.start, elementName.loc.end);
+      this._startEditingElementAtCoordinates(event.pageX, event.pageY);
     }
   }
 
+  _startEditingElementAtCoordinates(x, y) {
+    var element = this._getElementAtCoordinates(x, y);
+    if (!element || element.node !== this.props.editElement.node) {
+      return;
+    }
+
+    var attribute = this._getAttributeAtCoordinates(x, y);
+    var elementName;
+    var onChange;
+
+    if (attribute) {
+      elementName = attribute.value.name;
+      onChange = this._onEditingElementAttributeNameChange;
+      var attributeIndex =
+        attribute.parent.value.attributes.indexOf(attribute.value);
+      this.setState({editingAttributeIndex: attributeIndex});
+    } else {
+      elementName = element.value.openingElement.name;
+      onChange = this._onEditingElementNameChange;
+    }
+
+    this._editRange(elementName.loc.start, elementName.loc.end, onChange);
+  }
+
   _stopEditingText() {
+    var codemirror = this._getCodeMirror();
     this._readOnlyMarks.forEach(mark => mark.clear());
     this._readOnlyMarks = null;
     this.state.editingTextMark.clear();
+
+    codemirror.off('change', this.state.onEditingTextChange);
+    codemirror.off('mousedown', this._ignoreCodeMirrorMouseDownOutsideEditText);
 
     this.setState({
       isEditingText: false,
@@ -159,7 +199,7 @@ class OriginalCodeEditor extends React.Component {
     });
   }
 
-  _editRange(start, end) {
+  _editRange(start, end, onChange) {
     var codemirror = this._getCodeMirror();
 
     var lastLineHandle = codemirror.getLineHandle(codemirror.lastLine());
@@ -189,20 +229,54 @@ class OriginalCodeEditor extends React.Component {
       }
     );
 
+    codemirror.on('change', onChange);
+    codemirror.on('mousedown', this._ignoreCodeMirrorMouseDownOutsideEditText);
+
     this.setState({
       isEditingText: true,
       readOnly: false,
-      editingTextMark: editingTextMark
+      editingTextMark: editingTextMark,
+      onEditingTextChange: onChange
     });
   }
 
-  // shouldComponentUpdate(nextProps, nextState) {
-  //   if (nextState.isEditingText) {
-  //     return false;
-  //   } else {
-  //     return true;
-  //   }
-  // }
+  _ignoreCodeMirrorMouseDownOutsideEditText(codemirror, event) {
+    if (this._isMouseEventInTextMark(event, this.state.editingTextMark)) {
+      event.codemirrorIgnore = true;
+    }
+  }
+
+  _isMouseEventInTextMark(event, mark) {
+    var codemirror = this._getCodeMirror();
+    var position = codemirror.coordsChar(event.pageX, event.pageY);
+    var markPosition = mark.find();
+    return (
+      position.line !== markPosition.from.line ||
+      position.ch < markPosition.from.ch || position.ch > markPosition.to.ch
+    );
+  }
+
+  _onEditingElementNameChange() {
+    if (this.props.onElementNameChange) {
+      this.props.onElementNameChange(this._getEditingText());
+    }
+  }
+
+  _onEditingElementAttributeNameChange() {
+    if (this.props.onElementAttributeNameChange) {
+      this.props.onElementAttributeNameChange(
+        this._getEditingText(),
+        this.state.editingAttributeIndex
+      );
+    }
+  }
+
+  _getEditingText() {
+    var textPosition = this.state.editingTextMark.find();
+    var lineText =
+      this._getCodeMirror().getDoc().getLine(textPosition.from.line);
+    return lineText.slice(textPosition.from.ch, textPosition.to.ch);
+  }
 
   _selectElement(element) {
     if (!element) {
@@ -230,7 +304,7 @@ class OriginalCodeEditor extends React.Component {
               : '',
           ].join(' ')}
           onMouseMove={this._onCodeMirrorMouseMove.bind(this)}
-          onMouseDown={this._onCodeMirrorClick.bind(this)}>
+          onMouseDownCapture={this._onCodeMirrorClick.bind(this)}>
           <ReactCodeMirror
             ref="codemirror"
             options={{

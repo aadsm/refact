@@ -2,7 +2,6 @@ const React = require('react');
 const fs = require('fs');
 const OriginalCodeEditor = require('./OriginalCodeEditor.react');
 const FactoredCodeEditor = require('./FactoredCodeEditor.react');
-const jscodeshift = require('jscodeshift');
 const Refactor = require('../Refactor');
 const FactoredReactComponent = require('../FactoredReactComponent');
 
@@ -49,6 +48,16 @@ class Refact extends React.Component {
     });
   }
 
+  _onElementNameChange(name) {
+    this.state.factoredReactComponent.setName(name);
+    this.state.refactor.applyFactoredReactComponent(this.state.factoredReactComponent);
+    this.setState({factoredReactComponent: this.state.factoredReactComponent});
+  }
+
+  _onElementAttributeNameChange(name, attributeIndex) {
+    
+  }
+
   render() {
     return (
       <div>
@@ -70,6 +79,10 @@ class Refact extends React.Component {
               mode={this.state.originalCodeEditorMode}
               onElementHover={this._onElementHover.bind(this)}
               onElementClick={this._onElementClick.bind(this)}
+              onElementNameChange={this._onElementNameChange.bind(this)}
+              onElementAttributeNameChange={
+                this._onElementAttributeNameChange.bind(this)
+              }
             />
           </div>
         </div>

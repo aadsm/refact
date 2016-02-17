@@ -1,14 +1,6 @@
 const React = require('react');
 
-class StaticComponentES6 extends React.Component {
-  _renderSection() {
-    return (
-      <div>
-        <h2>Section C</h2>
-      </div>
-    );
-  }
-
+class SimpleES6 extends React.Component {
   render() {
     return (
       <div>
@@ -26,4 +18,4 @@ class StaticComponentES6 extends React.Component {
   }
 }
 
-module.exports = StaticComponentES6;
+module.exports = SimpleES6;

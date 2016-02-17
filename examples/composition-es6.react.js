@@ -2,7 +2,7 @@ const React = require('react');
 const Image = require('Image');
 const Profile = require('Profile.react');
 
-class RequireComponentES6 extends React.Component {
+class CompositionES6 extends React.Component {
   _renderProfile() {
     return (
       <Profile>
@@ -23,4 +23,4 @@ class RequireComponentES6 extends React.Component {
   }
 }
 
-module.exports = StaticComponentES6;
+module.exports = CompositionES6;

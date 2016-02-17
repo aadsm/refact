@@ -7,6 +7,11 @@
 .refactHeader {
   height: 50px;
   padding: 8px;
+  position: relative;
+}
+
+.refactHeaderOr {
+  padding-left: 30px;
 }
 
 .logo {
@@ -18,6 +23,23 @@
   display: inline-block;
   margin: 0;
   vertical-align: middle;
+}
+
+.options ul {
+  display: inline-block;
+  margin: 0;
+  vertical-align: middle;
+}
+
+.clickableItem {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.visualInstruction {
+  position: absolute;
+  top: 3px;
+  right: 3px;
 }
 
 .refactMainArea {

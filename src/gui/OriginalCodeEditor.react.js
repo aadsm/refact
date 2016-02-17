@@ -30,6 +30,21 @@ class OriginalCodeEditor extends React.Component {
     if (nextProps.editElement !== this.props.editElement) {
       this._editElement(nextProps.editElement);
     }
+
+    if (nextProps.mode === 'edit') {
+      this.setState({
+        readOnly: false,
+      });
+      this._editCode();
+    } else if (nextProps.mode === 'elementSelection') {
+      this.setState({
+        readOnly: 'nocursor'
+      });
+    }
+
+    if (this.props.mode === 'edit' && nextProps.mode !== 'edit') {
+      this._stopEditingCode();
+    }
   }
 
   _updateCodeMirrorText(source) {
@@ -249,6 +264,14 @@ class OriginalCodeEditor extends React.Component {
       editingTextMark: editingTextMark,
       onEditingTextChange: onChange
     });
+  }
+
+  _editCode() {
+    this._getCodeMirror().on('change', this.props.onChange);
+  }
+
+  _stopEditingCode() {
+    this._getCodeMirror().off('change', this.props.onChange);
   }
 
   _handleEditingTextSelection(codemirror, handles) {

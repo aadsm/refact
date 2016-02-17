@@ -2,11 +2,12 @@ const React = require('react');
 const Image = require('Image');
 const Profile = require('Profile.react');
 
-class ExpreComponentES6 extends React.Component {
+class ExpressionsES6 extends React.Component {
   _renderProfile() {
     return (
       <Profile>
-        <h2>Name</h2>
+        <h2>{this.state.name}</h2>
+        <div>{this.state.picture}</div>
       </Profile>
     );
   }
@@ -36,4 +37,4 @@ class ExpreComponentES6 extends React.Component {
   }
 }
 
-module.exports = StaticComponentES6;
+module.exports = ExpressionsES6;

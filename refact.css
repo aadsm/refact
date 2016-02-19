@@ -1,0 +1,141 @@
+#make-react-happy {
+  background-color: #D9D9F3;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.refactHeader {
+  height: 50px;
+  padding: 8px;
+  position: relative;
+}
+
+.refactHeaderOr {
+  padding-left: 30px;
+}
+
+.logo {
+  display: inline-block;
+  line-height: 50px;
+}
+
+.instructions ol {
+  display: inline-block;
+  margin: 0;
+  vertical-align: middle;
+}
+
+.options ul {
+  display: inline-block;
+  margin: 0;
+  vertical-align: middle;
+}
+
+.clickableItem {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.visualInstruction {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+}
+
+.refactMainArea {
+  display: inline-block;
+  width: 50%;
+  vertical-align: top;
+  height: 600px;
+  /*height: 100%;*/
+}
+
+.originalCodeArea {
+  border: 1px solid black;
+  margin-right: 4px;
+  height: 100%;
+}
+
+.codeToolbarAction {
+  float: right;
+  margin-right: 12px;
+  line-height: 30px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.factoredCodeArea {
+  border: 1px solid black;
+  margin-left: 4px;
+  height: 100%;
+}
+
+.originalCodeArea,
+.factoredCodeArea {
+  background-color: white;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.CodeMirror {
+  height: 570px;
+  font-size: 16px;
+}
+
+.elementSelection {
+  background-color: rgba(255,240,6,.4);
+}
+
+.refactSelection {
+  background-color: rgba(255,240,6,.4);
+}
+
+.editableText.editText {
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+  background-color: white;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+  position: relative;
+  left: -2px;
+}
+
+.startEditText {
+  border-left: 1px solid black;
+  padding-left: 1px;
+}
+
+.endEditText {
+  border-right: 1px solid black;
+  padding-right: 1px;
+}
+
+.editableText.editText.editTextSelected {
+  background: #d9d9d9;
+}
+
+.editableText {
+  border-bottom: 1px dashed blue;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.originalCodeEditor_selectionMode .CodeMirror-lines {
+  cursor: pointer;
+}
+
+.originalCodeEditor_editElementMode .CodeMirror-lines {
+  cursor: default;
+}
+
+.codeToolbar {
+  border-bottom: 1px solid black;
+  height: 29px;
+  padding-left: 8px;
+}
+
+.codeToolbarTitle {
+  line-height: 30px;
+  font-weight: bold;
+}

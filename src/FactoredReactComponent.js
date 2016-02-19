@@ -26,12 +26,37 @@ class FactoredReactComponent {
       .replaceWith(jsxElement);
   }
 
+  _guessPropName(path) {
+    var parentNode = path.parentPath.value;
+
+    // If this expression container is assigned to another component
+    // property then just use that property name.
+    if (parentNode.type === 'JSXAttribute') {
+      return parentNode.name.name;
+    } else {
+      // If this expression container is a this.props.{name} or
+      // this.state.{name} use that name then.
+      if (path.value.expression.type === 'MemberExpression') {
+        var object = path.value.expression.object;
+        var property = path.value.expression.property;
+        if (
+          object.object && object.property &&
+          object.object.type === 'ThisExpression' &&
+          (object.property.name === 'props' || object.property.name === 'state')
+        ) {
+          return property.name;
+        }
+      }
+    }
+  }
+
   _importDependenciesAsProps(jsxElement) {
     var props = this._props = [];
     jscodeshift(jsxElement)
       .find(jscodeshift.JSXExpressionContainer)
       .replaceWith((path) => {
-        var propName = 'prop' + (props.length + 1);
+        var tentativePropName = this._guessPropName(path);
+        var propName = tentativePropName || ('prop' + (props.length + 1));
         props.push({
           name: propName,
           expression: path.node,
@@ -68,22 +93,6 @@ class FactoredReactComponent {
       .find(jscodeshift.VariableDeclaration)
       .filter((path) => path.value.declarations[0].id.name === 'React')
       .insertAfter(requires);
-
-    //     jscodeshift.variableDeclaration(
-    //       "const",
-    //       [
-    //         jscodeshift.variableDeclarator(
-    //           jscodeshift.identifier("Image"),
-    //           jscodeshift.callExpression(
-    //             jscodeshift.identifier("require"),
-    //             [
-    //               jscodeshift.literal("Image.react")
-    //             ]
-    //           )
-    //         )
-    //       ]
-    //     )
-    //   );
   }
 
   getFactoredJsxElement() {

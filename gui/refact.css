@@ -46,7 +46,8 @@
   display: inline-block;
   width: 50%;
   vertical-align: top;
-  height: 400px;
+  height: 600px;
+  /*height: 100%;*/
 }
 
 .originalCodeArea {
@@ -77,7 +78,7 @@
 }
 
 .CodeMirror {
-  height: 370px;
+  height: 570px;
   font-size: 16px;
 }
 

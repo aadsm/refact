@@ -17,15 +17,41 @@ class Refact extends React.Component {
   }
 
   componentWillMount() {
-    this._loadExample(this.state.example)
+    this._loadExample(this.state.example);
+    // Clipboard paste
+    window.addEventListener('paste', (event) => {
+      var code = event.clipboardData.getData('text/plain');
+      this._updateCode(code);
+    });
+    // Drag and Drop
+    window.addEventListener('dragover', (event) => {
+      event.preventDefault();
+    });
+    window.addEventListener('drop', (event) => {
+      var fileReader = new FileReader();
+      fileReader.onload = (event) => {
+        fileReader = null;
+        this._updateCode(event.target.result);
+      }
+      fileReader.readAsText(event.dataTransfer.files[0]);
+    });
   }
 
   _loadExample(example) {
     this._getExampleCode(example, (code) => {
+      this._updateCode(code);
       this.setState({
-        originalCode: code,
-        refactor: new Refactor(code)
-      })
+        example: example,
+        originalCodeEditorMode: 'elementSelection',
+      });
+    });
+  }
+
+  _updateCode(code) {
+    this.setState({
+      originalCode: code,
+      example: '',
+      refactor: new Refactor(code)
     });
   }
 
@@ -78,10 +104,6 @@ class Refact extends React.Component {
     this._loadExample(event.target.value);
   }
 
-  _onOriginalCodeChange(value) {
-
-  }
-
   _editCode() {
     this.setState({
       refactor: new Refactor(this.state.originalCode),
@@ -127,6 +149,9 @@ class Refact extends React.Component {
         </li>,
         <li key="clickAttribute">
           Click on the underlined component prop names to edit them.
+        </li>,
+        <li key="clickAttribu2te">
+          Copy "You Code" and the "Factored Code" to clipboard.
         </li>
       );
     }
@@ -138,28 +163,41 @@ class Refact extends React.Component {
     );
   }
 
+  _renderExampleOption() {
+    return (
+      <li key="selectExample">
+        Use an example instead:
+        &nbsp;
+        <select onChange={this._onExampleChange.bind(this)} value={this.state.example}>
+          <option>--</option>
+          <option value="simple">Simple Component (ES6)</option>
+          <option value="composition">Composition Component (ES6)</option>
+          <option value="expressions">Expressions Component (ES6)</option>
+        </select>
+      </li>
+    );
+  }
+
   _renderOptions() {
     var options = [];
     if (this.state.originalCodeEditorMode === 'edit') {
       options.push(
-        <li key="selectExample">
-          Select an example:
-          &nbsp;
-          <select onChange={this._onExampleChange.bind(this)}>
-            <option>--</option>
-            <option value="simple">Simple Component (ES6)</option>
-            <option value="composition">Composition Component (ES6)</option>
-            <option value="expressions">Expressions Component (ES6)</option>
-          </select>
-        </li>
+        this._renderExampleOption()
       );
     } else if (this.state.originalCodeEditorMode === 'elementSelection') {
       options.push(
-        <li
-          key="editCode"
-          className="clickableItem"
-          onClick={this._editCode.bind(this)}>
-          Click here to edit your code
+        // <li
+        //   key="editCode"
+        //   className="clickableItem"
+        //   onClick={this._editCode.bind(this)}>
+        //   Click here to edit your code
+        // </li>
+        this._renderExampleOption(),
+        <li key="paste">
+          Ctrl/Cmd-V to paste your clipboard to "Your Code"
+        </li>,
+        <li key="drag">
+          Drag a file to "Your Code"
         </li>
       );
     } else if (this.state.originalCodeEditorMode === 'editElement') {
@@ -170,12 +208,7 @@ class Refact extends React.Component {
           onClick={this._elementSelection.bind(this)}>
           Choose a different element to factor
         </li>,
-        <li
-          key="cancelAndEditCode"
-          className="clickableItem"
-          onClick={this._editCode.bind(this)}>
-          Cancel everything and edit your code
-        </li>
+        this._renderExampleOption()
       );
     }
 
@@ -194,7 +227,7 @@ class Refact extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className={this.state.dragging ? 'dragging' : ''}>
         <div className="refactHeader">
           <span className="logo">Refact</span>
           {this._renderInstructions()}
@@ -219,7 +252,6 @@ class Refact extends React.Component {
               mode={this.state.originalCodeEditorMode}
               onElementHover={this._onElementHover.bind(this)}
               onElementClick={this._onElementClick.bind(this)}
-              onChange={this._onOriginalCodeChange.bind(this)}
               onElementNameChange={this._onElementNameChange.bind(this)}
               onElementAttributeNameChange={
                 this._onElementAttributeNameChange.bind(this)

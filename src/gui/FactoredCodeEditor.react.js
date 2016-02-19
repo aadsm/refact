@@ -17,11 +17,25 @@ class FactoredCodeEditor extends React.Component {
     return this.props.factoredReactComponent.toSource();
   }
 
+  _onCopyClick() {
+    var root = document.body;
+    var textarea = document.createElement('textarea');
+
+    root.appendChild(textarea);
+    textarea.value = this.refs.codemirror.getCodeMirror().getValue();
+    textarea.select();
+    try {
+      document.execCommand('copy');
+    } catch (e) { console.error(e) }
+    root.removeChild(textarea);
+  }
+
   render() {
     return (
       <div>
         <div className="codeToolbar">
           <span className="codeToolbarTitle">Factored Code</span>
+          <span className="codeToolbarAction" onClick={this._onCopyClick.bind(this)}>copy</span>
         </div>
         <ReactCodeMirror
           ref="codemirror"

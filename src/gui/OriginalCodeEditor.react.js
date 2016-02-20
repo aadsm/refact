@@ -2,6 +2,7 @@ const React = require('react');
 const fs = require('fs');
 const ReactCodeMirror = require('react-codemirror');
 const jscodeshift = require('jscodeshift');
+const CodeIndexer = require('../CodeIndexer');
 
 require('codemirror/mode/jsx/jsx');
 
@@ -9,7 +10,8 @@ class OriginalCodeEditor extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      readOnly: 'nocursor'
+      readOnly: 'nocursor',
+      codeIndexer: new CodeIndexer(this.props.source)
     };
 
     this._onEditingElementNameChange = this._onEditingElementNameChange.bind(this);
@@ -57,6 +59,10 @@ class OriginalCodeEditor extends React.Component {
       bottom: scrollInfo.top + scrollInfo.height,
       right: scrollInfo.left + scrollInfo.width
     });
+
+    this.setState({
+      codeIndexer: new CodeIndexer(source)
+    });
   }
 
   _editElement(element) {
@@ -92,7 +98,7 @@ class OriginalCodeEditor extends React.Component {
       left: x,
       top: y
     });
-    return this.props.refactor.getElementAt(position.line, position.ch);
+    return this.state.codeIndexer.getElementAt(position.line, position.ch);
   }
 
   _getAttributeAtCoordinates(x, y) {
@@ -101,7 +107,7 @@ class OriginalCodeEditor extends React.Component {
       left: x,
       top: y
     });
-    return this.props.refactor.getAttributeAt(position.line, position.ch);
+    return this.state.codeIndexer.getAttributeAt(position.line, position.ch);
   }
 
   _hoverElementAtCoordinates(x, y) {
@@ -120,7 +126,7 @@ class OriginalCodeEditor extends React.Component {
     }
     this._lastPosition = position;
 
-    var element = this.props.refactor.getElementAt(position.line, position.ch);
+    var element = this.state.codeIndexer.getElementAt(position.line, position.ch);
     this._hoverElement(element);
   }
 
@@ -177,7 +183,7 @@ class OriginalCodeEditor extends React.Component {
 
   _startEditingElementAtCoordinates(x, y) {
     var element = this._getElementAtCoordinates(x, y);
-    if (!element || element.node !== this.props.editElement.node) {
+    if (!element || element.node.start !== this.props.editElement.node.start) {
       return;
     }
 
@@ -218,6 +224,7 @@ class OriginalCodeEditor extends React.Component {
     codemirror.off('beforeSelectionChange', this._handleEditingTextSelection);
 
     this.setState({
+      codeIndexer: new CodeIndexer(this.props.source),
       isEditingText: false,
       editingTextMark: null,
       readOnly: 'nocursor'

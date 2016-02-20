@@ -235,19 +235,11 @@ class Refact extends React.Component {
             -or-
           </span>
           {this._renderOptions()}
-          {/*
-            <img
-              className="visualInstruction"
-              src={this._getVisualInstructionSrc()}
-            />
-          */}
-
         </div>
         <div className="refactMainArea">
           <div className="originalCodeArea">
             <OriginalCodeEditor
               source={this.state.refactor.toSource()}
-              refactor={this.state.refactor}
               editElement={this.state.refactor.getFactoredElement()}
               mode={this.state.originalCodeEditorMode}
               onElementHover={this._onElementHover.bind(this)}

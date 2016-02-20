@@ -24,10 +24,13 @@
     "browserify": "^12.0.1",
     "watchify": "^3.6.1",
     "babelify": "^7.2.0",
-    "brfs": "~1.4.3"
+    "brfs": "~1.4.3",
+    "google-closure-compiler": "20151015.0.0"
   },
   "scripts": {
-    "watch": "watchify src/gui/main.js -v -o gui/main-bundle.js -t [ babelify --presets [ react babel-preset-es2015 ] ] -t brfs"
+    "watch": "watchify src/gui/main.js -v -o gui/main-bundle.js -t [ babelify --presets [ react babel-preset-es2015 ] ] -t brfs",
+    "dist": "java -jar node_modules/google-closure-compiler/compiler.jar --warning_level QUIET --compilation_level SIMPLE_OPTIMIZATIONS --language_in ECMASCRIPT5 --js gui/main-bundle.js > gui/main-bundle.min.js"
+
   },
   "engines": {
     "node": ">=4.0.0"

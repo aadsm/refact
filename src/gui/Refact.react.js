@@ -126,17 +126,7 @@ class Refact extends React.Component {
   _renderInstructions() {
     var instructions = [];
 
-    if (this.state.originalCodeEditorMode === 'edit') {
-      instructions.push(
-        <li key="edit">Edit your code.</li>,
-        <li
-          key="factor"
-          className="clickableItem"
-          onClick={this._restartRefactor.bind(this)}>
-          Click here to select an element to factor out.
-        </li>
-      );
-    } else if (this.state.originalCodeEditorMode === 'selectElement') {
+    if (this.state.originalCodeEditorMode === 'selectElement') {
       instructions.push(
         <li key="hover">
           Hover react elements in your code to find refactable elements.

@@ -15,12 +15,14 @@ It only supports generating ES6 react based classes, will had support for classi
 Factoring out of the selected element into a new React element uses the most simple and naive way. Dependencies are not brought at all into the new component. This is something I plan to address in the future.
 
 # How to use locally
-```
+```bash
 npm install && npm run dist
 ```
 
 Open `gui/index.html` in a browser.
 Follow the instructions at the top.
+
+Use `npm run watch` to automatically compile the code on file changes.
 
 # Documentation
 
@@ -29,7 +31,7 @@ This refactoring is based on two main classes: `Refactor` and `FactoredReactComp
 ## Refactor
 This class represents the code you want to refactor. You initialize it with your code and then you can create a new React component by selecting a react element to refactor:
 
-```
+```javascript
 var yourCode = 'function render() { return <div className="foo"><h1>Title</h1></div>; }';
 var refactor = new Refactor(yourCode);
 var factoredReactComponent = refactor.factorElementAt(0, 30, 'es6');
@@ -40,7 +42,7 @@ var factoredReactComponent = refactor.factorElementAt(0, 30, 'es6');
 ### FactoredReactComponent
 You can edit the new react component name and any properties that were created to pass in dependencies that existed in your code. In this example there will be one property, the className.
 
-```
+```javascript
 // Change its name
 factoredReactComponent.setName("MyComponent");
 // Read the properties created
@@ -52,12 +54,12 @@ factoredReactComponent.setPropName(0, "className");
 The first argument of the `setPropName` method is the prop index returned by `getProps()`.
 
 When you're happy with the new React component you can print out its code:
-```
+```javascript
 console.log(factoredReactComponent.toSource());
 ```
 
 Finally you need to start using this new component in your code to replace the factored elements:
-```
+```javascript
 refactor.applyFactoredReactComponent(factoredReactComponent);
 console.log(refactor.toSource());
 ```

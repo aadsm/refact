@@ -104,14 +104,6 @@ class Refact extends React.Component {
     this._loadExample(event.target.value);
   }
 
-  _editCode() {
-    this.setState({
-      refactor: new Refactor(this.state.originalCode),
-      originalCodeEditorMode: 'edit',
-      factoredReactComponent: null
-    });
-  }
-
   _elementSelection() {
     this.setState({
       refactor: new Refactor(this.state.originalCode),
@@ -180,18 +172,9 @@ class Refact extends React.Component {
 
   _renderOptions() {
     var options = [];
-    if (this.state.originalCodeEditorMode === 'edit') {
+
+    if (this.state.originalCodeEditorMode === 'elementSelection') {
       options.push(
-        this._renderExampleOption()
-      );
-    } else if (this.state.originalCodeEditorMode === 'elementSelection') {
-      options.push(
-        // <li
-        //   key="editCode"
-        //   className="clickableItem"
-        //   onClick={this._editCode.bind(this)}>
-        //   Click here to edit your code
-        // </li>
         this._renderExampleOption(),
         <li key="paste">
           Ctrl/Cmd-V to paste your clipboard to "Your Code"

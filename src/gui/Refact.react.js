@@ -120,6 +120,13 @@ class Refact extends React.Component {
         onElementHighlight: this._onElementHighlight.bind(this),
         onElementSelect: this._onElementSelect.bind(this),
       };
+    } else if (mode === 'editElement') {
+      return {
+        element: this.state.refactor.getFactoredElement(),
+        onElementNameChange: this._onElementNameChange.bind(this),
+        onElementAttributeNameChange:
+          this._onElementAttributeNameChange.bind(this),
+      };
     }
   }
 
@@ -218,13 +225,8 @@ class Refact extends React.Component {
           <div className="originalCodeArea">
             <OriginalCodeEditor
               source={this.state.refactor.toSource()}
-              editElement={this.state.refactor.getFactoredElement()}
               mode={this.state.originalCodeEditorMode}
               modeConfig={this._getModeConfig()}
-              onElementNameChange={this._onElementNameChange.bind(this)}
-              onElementAttributeNameChange={
-                this._onElementAttributeNameChange.bind(this)
-              }
             />
           </div>
         </div>

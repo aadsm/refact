@@ -142,8 +142,8 @@ class Refact extends React.Component {
         <li key="clickAttribute">
           Click on the underlined component prop names to edit them.
         </li>,
-        <li key="clickAttribu2te">
-          Copy "You Code" and the "Factored Code" to clipboard.
+        <li key="copy">
+          Copy "Your Code" and the "Factored Code" to clipboard.
         </li>
       );
     }

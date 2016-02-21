@@ -11,7 +11,7 @@ class Refact extends React.Component {
     super(props);
     this.state = {
       refactor: new Refactor(''),
-      originalCodeEditorMode: 'elementSelection',
+      originalCodeEditorMode: 'selectElement',
       example: 'expressions'
     };
   }
@@ -42,7 +42,7 @@ class Refact extends React.Component {
       this._updateCode(code);
       this.setState({
         example: example,
-        originalCodeEditorMode: 'elementSelection',
+        originalCodeEditorMode: 'selectElement',
       });
     });
   }
@@ -65,7 +65,7 @@ class Refact extends React.Component {
     }
   }
 
-  _onElementHover(element) {
+  _onElementHighlight(element) {
     var factoredReactComponent = null;
 
     if (element) {
@@ -77,7 +77,7 @@ class Refact extends React.Component {
     });
   }
 
-  _onElementClick(element) {
+  _onElementSelect(element) {
     var factoredReactComponent = this.state.refactor.factorElement(element, 'es6');
     this.state.refactor.applyFactoredReactComponent(factoredReactComponent);
 
@@ -104,12 +104,23 @@ class Refact extends React.Component {
     this._loadExample(event.target.value);
   }
 
-  _elementSelection() {
+  _restartRefactor() {
     this.setState({
       refactor: new Refactor(this.state.originalCode),
       factoredReactComponent: null,
-      originalCodeEditorMode: 'elementSelection'
+      originalCodeEditorMode: 'selectElement'
     });
+  }
+
+  _getModeConfig() {
+    var mode = this.state.originalCodeEditorMode;
+
+    if (mode === 'selectElement') {
+      return {
+        onElementHighlight: this._onElementHighlight.bind(this),
+        onElementSelect: this._onElementSelect.bind(this),
+      };
+    }
   }
 
   _renderInstructions() {
@@ -121,11 +132,11 @@ class Refact extends React.Component {
         <li
           key="factor"
           className="clickableItem"
-          onClick={this._elementSelection.bind(this)}>
+          onClick={this._restartRefactor.bind(this)}>
           Click here to select an element to factor out.
         </li>
       );
-    } else if (this.state.originalCodeEditorMode === 'elementSelection') {
+    } else if (this.state.originalCodeEditorMode === 'selectElement') {
       instructions.push(
         <li key="hover">
           Hover react elements in your code to find refactable elements.
@@ -173,7 +184,7 @@ class Refact extends React.Component {
   _renderOptions() {
     var options = [];
 
-    if (this.state.originalCodeEditorMode === 'elementSelection') {
+    if (this.state.originalCodeEditorMode === 'selectElement') {
       options.push(
         this._renderExampleOption(),
         <li key="paste">
@@ -188,7 +199,7 @@ class Refact extends React.Component {
         <li
           key="elementSelection"
           className="clickableItem"
-          onClick={this._elementSelection.bind(this)}>
+          onClick={this._restartRefactor.bind(this)}>
           Choose a different element to factor
         </li>,
         this._renderExampleOption()
@@ -200,12 +211,6 @@ class Refact extends React.Component {
         <ul>{options}</ul>
       </span>
     );
-  }
-
-  _getVisualInstructionSrc() {
-    if (this.state.originalCodeEditorMode === 'elementSelection') {
-      return "images/hover-element.gif";
-    }
   }
 
   render() {
@@ -225,8 +230,7 @@ class Refact extends React.Component {
               source={this.state.refactor.toSource()}
               editElement={this.state.refactor.getFactoredElement()}
               mode={this.state.originalCodeEditorMode}
-              onElementHover={this._onElementHover.bind(this)}
-              onElementClick={this._onElementClick.bind(this)}
+              modeConfig={this._getModeConfig()}
               onElementNameChange={this._onElementNameChange.bind(this)}
               onElementAttributeNameChange={
                 this._onElementAttributeNameChange.bind(this)

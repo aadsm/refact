@@ -82,7 +82,7 @@
   font-size: 16px;
 }
 
-.elementSelection {
+.elementHover {
   background-color: rgba(255,240,6,.4);
 }
 
@@ -121,7 +121,7 @@
   font-weight: bold;
 }
 
-.originalCodeEditor_selectionMode .CodeMirror-lines {
+.originalCodeEditor_selectElementMode .CodeMirror-lines {
   cursor: pointer;
 }
 

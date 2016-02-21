@@ -1,11 +1,19 @@
 const jscodeshift = require('jscodeshift');
 const fs = require('fs');
 const FactoredReactComponent = require('./FactoredReactComponent');
+const CodeIndexer = require('./CodeIndexer');
 
 class Refactor {
   constructor(code) {
     this._code = code;
     this._jscodeshift = jscodeshift(code);
+  }
+
+  factorElementAt(line, column, template) {
+    template = template || 'es6';
+    return this.factorElement(
+      new CodeIndexer(this._code).getElementAt(line, colum, template)
+    );
   }
 
   factorElement(element, template) {

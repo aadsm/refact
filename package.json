@@ -6,7 +6,7 @@
     "name": "António Afonso",
     "email": "antonio.afonso@gmail.com"
   },
-  "license": "",
+  "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aadsm/refact.git"
